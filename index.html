@@ -12,6 +12,7 @@
         document.getElementById('downloadBtn').addEventListener('click', function () {
             // RSS 피드 URL
             const rssUrl = 'https://rss.blog.naver.com/sjlib24.xml';
+            const corsProxy = 'https://cors-anywhere.herokuapp.com/'; // CORS 프록시 URL
 
             // 원하는 카테고리와 현재 날짜
             const targetCategory = '문헌정보실 테마도서';
@@ -20,8 +21,8 @@
             // 데이터 저장을 위한 리스트 초기화
             let dataList = [];
 
-            // RSS 피드 가져오기
-            fetch(rssUrl)
+            // CORS 프록시를 통해 RSS 피드 가져오기
+            fetch(corsProxy + rssUrl)
                 .then(response => response.text())
                 .then(str => {
                     const parser = new DOMParser();
