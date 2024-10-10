@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSS to JSON</title>
+</head>
+<body>
+    <button id="downloadBtn">Download JSON</button>
+
+    <script>
+        document.getElementById('downloadBtn').addEventListener('click', function () {
+            // RSS 피드 URL
+            const rssUrl = 'https://rss.blog.naver.com/sjlib24.xml';
+
+            // 원하는 카테고리와 현재 날짜
+            const targetCategory = '문헌정보실 테마도서';
+            const currentDate = new Date().toISOString();
+
+            // 데이터 저장을 위한 리스트 초기화
+            let dataList = [];
+
+            // RSS 피드 가져오기
+            fetch(rssUrl)
+                .then(response => response.text())
+                .then(str => {
+                    const parser = new DOMParser();
+                    const xml = parser.parseFromString(str, "text/xml");
+                    const items = xml.querySelectorAll("item");
+
+                    items.forEach(item => {
+                        const title = item.querySelector('title').textContent.trim();
+                        const description = item.querySelector('description').textContent.trim();
+                        const category = item.querySelector('category') ? item.querySelector('category').textContent.trim() : '카테고리 없음';
+
+                        // 카테고리 필터링
+                        if (category !== targetCategory) return;
+
+                        // 괄호 안의 내용 제거
+                        const descriptionNoParentheses = description.replace(/\s*\(.*?\)\s*/g, '').trim();
+
+                        // '1'로 시작하지 않으면 앞에 '1. ' 추가
+                        let content = descriptionNoParentheses.startsWith('1') ? descriptionNoParentheses : '1. ' + descriptionNoParentheses;
+
+                        // 항목별로 분리
+                        let itemsContent = content.split(/\s*\d+\.\s*/).filter(Boolean);
+
+                        // 원본에서 태그 추출
+                        let tagsInParentheses = [...description.matchAll(/\(.*?\)/g)].map(tag => tag[0]);
+
+                        // 각 항목별 데이터와 태그를 매칭하여 리스트 생성
+                        let summaryList = itemsContent.map((content, idx) => {
+                            let tags = tagsInParentheses[idx] || '';
+                            tags = tags.replace(/[()\s#]+/g, ' ').trim();
+                            return {
+                                data: content.trim(),
+                                tag: tags
+                            };
+                        });
+
+                        // 데이터 리스트에 추가
+                        dataList.push({
+                            title: title,
+                            summary: summaryList
+                        });
+                    });
+
+                    // JSON 형식의 최종 데이터 구성
+                    const outputData = {
+                        category: targetCategory,
+                        date: currentDate,
+                        data: dataList
+                    };
+
+                    // JSON 파일로 변환하여 다운로드
+                    const jsonString = JSON.stringify(outputData, null, 4);
+                    const blob = new Blob([jsonString], { type: 'application/json' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'record.json';
+                    link.click();
+                })
+                .catch(error => {
+                    console.error('오류 발생:', error);
+                });
+        });
+    </script>
+</body>
+</html>
