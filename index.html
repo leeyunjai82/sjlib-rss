@@ -101,7 +101,7 @@
                         // 각 항목별 데이터와 태그를 매칭하여 리스트 생성
                         let summaryList = itemsContent.map((content, idx) => {
                             let tags = tagsInParentheses[idx] || '';
-                            tags = tags.replace(/[()\s#]+/g, ' ').trim();
+                            tags = tags.replace(/[()#]+/g, '').trim();
                             return {
                                 data: content.trim(),
                                 tag: tags
