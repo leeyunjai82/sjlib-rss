@@ -108,7 +108,7 @@ while True:
     ans = listen()["text"]
     print("[STT]:", ans)
 
-    if '수정도서관' in ans or '수정 도서관' in ans:
+    if '수정' in ans or '수정도서관' in ans or '수정 도서관' in ans:
       state = True
     elif '안녕' in ans :
       talk('안녕, 좋은 하루 보내', 'mp3/bye.mp3', None, 1)
