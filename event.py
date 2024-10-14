@@ -23,5 +23,8 @@ while True:
     audio.play('mp3/event.mp3', VOLUME, background=False)
     motion.set_motion('greeting', 2)
     motion.set_motion('stop')
+    motion.set_motion('forward1')
+    motion.set_motion('backward1')
+    motion.set_motion('stop')    
     device.eye_off()
   time.sleep(1) 
