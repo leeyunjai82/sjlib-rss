@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>추천도서 로봇 - 수정</title>
+    <!-- Socket.IO 클라이언트 라이브러리 -->
+    <script src="../static/socket.io.min.js?ver=240110v1"></script>
+    <link rel="shortcut icon" href="../static/logo.png" type="image/x-icon" />
+    <style>
+        /* 기본 스타일 */
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        /* 헤더 스타일 */
+        header {
+            background-color: #2B9B61;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        /* 메시지 영역 스타일 */
+        #messages {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 60vh;
+            overflow-y: auto;
+            margin: 20px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        /* 입력 영역 스타일 */
+        #input-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 20px 20px 20px;
+        }
+        #input {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        #send {
+            padding: 15px 20px;
+            font-size: 16px;
+            background-color: #2B9B61;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #send:hover {
+            background-color: #45a049;
+        }
+        /* 메시지 스타일 */
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .message.user {
+            justify-content: flex-end;
+        }
+        .message.bot {
+            justify-content: flex-start;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            line-height: 1.4;
+            position: relative;
+        }
+        .message.user .message-content {
+            background-color: #dcf8c6;
+            color: #000;
+            border-bottom-right-radius: 0;
+        }
+        .message.bot .message-content {
+            background-color: #fff;
+            color: #000;
+            border-bottom-left-radius: 0;
+            border: 1px solid #ccc;
+        }
+        /* 말풍선 꼬리 */
+        .message.user .message-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: -10px;
+            border-width: 10px 0 0 10px;
+            border-style: solid;
+            border-color: #dcf8c6 transparent;
+        }
+        .message.bot .message-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -10px;
+            border-width: 10px 10px 0 0;
+            border-style: solid;
+            border-color: #fff transparent;
+        }
+        /* 스크롤바 스타일 */
+        #messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        #messages::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📚 추천도서 로봇 - 수정 </h1>
+    </header>
+    <div id="messages"></div>
+    <div id="input-area">
+        <input type="text" id="input" placeholder="메시지를 입력하세요">
+        <button id="send">전송</button>
+    </div>
+
+    <!-- 파일 업로드 영역 추가 -->
+    <div id="upload-area" style="margin: 20px; text-align: center;">
+        <input type="file" id="fileInput" accept=".json" style="font-size: 16px;" />
+        <button id="uploadButton" style="padding: 10px 20px; font-size: 16px; margin-left: 10px;">업로드</button>
+    </div>
+
+    <script>
+        const socket = io(`http://${location.hostname}:10001`, { path: "/ws/socket.io" });
+        console.log('Connected to server at', location.hostname);
+
+        const messages = document.getElementById('messages');
+        const input = document.getElementById('input');
+        const sendButton = document.getElementById('send');
+
+        // 서버로부터 메시지를 받으면 화면에 표시
+        socket.on('message', function(data) {
+            console.log('message', data);
+            addMessage('bot', data.text);
+        });
+
+        // 서버로부터 입력 프롬프트를 받으면 입력창에 포커스
+        socket.on('prompt', function(data) {
+            input.placeholder = data.text;
+            input.focus();
+        });
+
+        // 전송 버튼 클릭 또는 엔터 키 입력 시 서버로 메시지 전송
+        sendButton.addEventListener('click', function() {
+            sendMessage();
+        });
+
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const text = input.value.trim();
+            if (text) {
+                socket.emit('input', { text: text });
+                // 사용자의 메시지도 화면에 표시
+                addMessage('user', text);
+                input.value = '';
+            }
+        }
+
+        function addMessage(sender, text) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('message', sender);
+
+            const messageContent = document.createElement('div');
+            messageContent.classList.add('message-content');
+            messageContent.textContent = text;
+
+            messageWrapper.appendChild(messageContent);
+            messages.appendChild(messageWrapper);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // 파일 업로드 기능 추가
+        const fileInput = document.getElementById('fileInput');
+        const uploadButton = document.getElementById('uploadButton');
+
+        uploadButton.addEventListener('click', function() {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('업로드할 JSON 파일을 선택해주세요.');
+                return;
+            }
+            if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+                alert('JSON 파일만 업로드할 수 있습니다.');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('파일 업로드 중 오류가 발생했습니다.');
+            });
+        });
+    </script>
+</body>
+</html>
