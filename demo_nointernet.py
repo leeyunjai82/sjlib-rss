@@ -18,7 +18,7 @@ audio = Audio()
 motion = Motion()
 device = Device()
 speech = Speech()
-VOLUME = 50
+VOLUME = 100
 
 app = FastAPI()
 sio = SocketManager(app=app, cors_allowed_origins=[], mount_location="/ws/socket.io", socketio_path="")
