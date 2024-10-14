@@ -55,7 +55,7 @@ async def touch_sensor_monitor():
 
 async def talk(string, filepath, actions, delay=1):
   device.eye_on(255,255,0)
-  speech.tts(string=string, filename=filepath, voice='gtts', lang='ko')
+  #speech.tts(string=string, filename=filepath, voice='gtts', lang='ko')
   print("[TTS]:", string)
   await sio.emit('message', {'text': string})
   await asyncio.sleep(0.1)
