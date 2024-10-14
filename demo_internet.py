@@ -101,7 +101,7 @@ while True:
     talk(f"{n}. {selected_theme['title']}", f'mp3/theme{n}.mp3', None, 5)
     talk(f"책을 소개해줄게", 'mp3/introduce_book.mp3', None, 3) 
     for i, item in enumerate(selected_theme['summary']):
-      talk(f"{idx+1} 번째 도서, {item['data']}", f'mp3/book{n}_{i}.mp3', ["speak_r1","speak_l1"], 1)
+      talk(f"{i+1} 번째 도서, {item['data']}", f'mp3/book{n}_{i}.mp3', ["speak_r1","speak_l1"], 1)
 
     motion.set_motion('stop')
     talk('더 추천을 원하면, "수정도서관" 없으면, "안녕" 이라고 해줘', 'mp3/select.mp3', None, 6)
