@@ -111,7 +111,7 @@ while True:
     if '수정도서관' in ans or '수정 도서관' in ans:
       state = True
     elif '안녕' in ans :
-      talk('안녕, 처음부터 다시 시작할게', 'mp3/bye.mp3', None, 1)
+      talk('안녕, 좋은 하루 보내', 'mp3/bye.mp3', None, 1)
       motion.set_motion('hand3', 2)
       motion.set_motion('stop')
       state = False      
