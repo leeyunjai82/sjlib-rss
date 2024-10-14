@@ -10,7 +10,7 @@ motion = Motion()
 device = Device()
 
 device.eye_off()
-VOLUME = 50
+VOLUME = 100
 start = 0
 
 while True:
