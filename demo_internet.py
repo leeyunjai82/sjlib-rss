@@ -13,7 +13,7 @@ audio = Audio()
 motion = Motion()
 device = Device()
 speech = Speech()
-VOLUME = 50
+VOLUME = 100
 
 try:
   with open('record.json', 'r', encoding='utf-8') as f:
