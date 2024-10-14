@@ -55,7 +55,7 @@ async def touch_sensor_monitor():
 
 async def talk(string, filepath, actions, delay=1):
   device.eye_on(255,255,0)
-  #speech.tts(string=string, filename=filepath, voice='gtts', lang='ko')
+  speech.tts(string=string, filename=filepath, voice='gtts', lang='ko')
   print("[TTS]:", string)
   await sio.emit('message', {'text': string})
   await asyncio.sleep(0.1)
@@ -123,7 +123,7 @@ async def handle_input(sid, data):
         await talk(f"{n}. {selected_theme['title']}", f'mp3/theme{n}.mp3', None, 6)
         await talk(f"책을 소개해줄게", 'mp3/introduce_book.mp3', None, 3) 
         for idx, item in enumerate(selected_theme['summary']):
-            await talk(item['data'], f'mp3/book{n}_{idx}.mp3', ["speak_r1","speak_l1"], 1)
+            await talk(f"{idx+1} 번째 도서, {item['data']}", f'mp3/book{n}_{idx}.mp3', ["speak_r1","speak_l1"], 1)
         
         await sio.emit('prompt', {'text': '<<수정도서관>> 또는 <<안녕>> 을 입력하세요.'})
         await talk('더 추천을 원하면, "수정도서관" 없으면, "안녕" 이라고 해줘', 'mp3/select.mp3', None)        
@@ -138,7 +138,7 @@ async def handle_input(sid, data):
             await sio.emit('prompt', {'text': f'1 에서 {len(res["data"])} 까지 테마 번호만 입력하세요.'})
             await talk('어떤 테마 번호의 도서 추천을 원해?', 'mp3/select_theme.mp3', None)
         elif user_input == '안녕':
-            await talk('안녕, 처음부터 다시 시작할게', 'mp3/bye.mp3', None)
+            await talk('안녕, 좋은 하루 보내', 'mp3/bye.mp3', None)
             pass
         else:
             await talk('잘못 선택했어, 다시 선택해줘', 'mp3/error.mp3', None)     
@@ -164,4 +164,4 @@ async def upload_file(file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run('server:app', host='0.0.0.0', port=10001, access_log=False)
+    uvicorn.run('demo_nointernet:app', host='0.0.0.0', port=10001, access_log=False)
