@@ -22,7 +22,7 @@ motion = Motion()
 device = Device()
 speech = Speech()
 
-VOLUME = 30
+VOLUME = 100
 TOPIC = '문헌정보실 테마도서'
 
 app = FastAPI()
