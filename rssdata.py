@@ -35,6 +35,7 @@ def update(category='문헌정보실 테마도서', filename='record.json'):
             post_title = item.find('title').get_text(strip=True)
             post_description = item.find('description').get_text(strip=True)
             post_category = item.find('category').get_text(strip=True) if item.find('category') else '카테고리 없음'
+            post_category = post_category.replace('\xa0', ' ')
 
             if post_category != category:
                 continue
@@ -85,3 +86,6 @@ def update(category='문헌정보실 테마도서', filename='record.json'):
             }
           ]
         }
+      
+if __name__ == "__main__":
+    update()
