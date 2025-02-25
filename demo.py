@@ -69,7 +69,7 @@ def stt(filename="stream.wav", timeout=5, verbose=True):
     else:
         os.system(f'arecord -D dmic_sv -c2 -r 16000 -f S32_LE -d {timeout} -t wav -q stream.raw; sox stream.raw -q -c 1 -b 16 {filename}; rm stream.raw')
 
-    response = requests.post('https://s-vapi.circul.us/stt/stt', files={'uploadFile':open(filename, 'rb')})
+    response = requests.post('https://o-vapi.circul.us/stt/stt', files={'uploadFile':open(filename, 'rb')})
     if response.status_code != 200:
         raise Exception(f'response error: {response}')
 
