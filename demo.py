@@ -22,7 +22,7 @@ motion = Motion()
 device = Device()
 speech = Speech()
 
-VOLUME = 30
+VOLUME = 100
 TOPIC = '문헌정보실 테마도서'
 #TOPIC = '어린이실 테마도서'
 
@@ -136,8 +136,23 @@ async def touch_sensor_monitor():
 
             if n > len(db['data']) or n < 1:
                 await talk('잘못 선택했어, 다시 선택해줘', 'mp3/error.mp3', None)
-                state = True
-                continue
+                
+                await talk('어떤 테마 번호의 도서 추천을 원해?', 'mp3/select_theme.mp3', None)
+                
+                ans = await listen()
+                #print("[STT]:", ans)
+                ans_text = ans.get('text', '') if isinstance(ans, dict) else ans
+                await sio.emit('msg1', {'text': ans_text})
+                n = 0
+                for idx in range(len(db['data'])):
+                    if str(idx+1) in ans_text:
+                        n = idx+1
+                        break
+
+                if n > len(db['data']) or n < 1:
+                    await talk('처음부터 시작해줘', 'mp3/restart.mp3', None)
+                    state = True
+                    continue
 
             # Send selected theme's book information
             selected_theme = db['data'][n - 1]
@@ -164,7 +179,21 @@ async def touch_sensor_monitor():
                 state = False
             else:
                 await talk('잘못 선택했어, 다시 선택해줘', 'mp3/error.mp3', None)
-                state = False
+                await talk('더 추천을 원하면, "수정이" 없으면, "안녕" 이라고 해줘', 'mp3/select.mp3', None)
+                ans = await listen()
+                #print("[STT]:", ans)
+                ans_text = ans.get('text', '') if isinstance(ans, dict) else ans
+                await sio.emit('msg1', {'text': ans_text})
+
+                if '수정' in ans_text:
+                    state = True
+                elif '안녕' in ans_text:
+                    await talk('안녕, 좋은 하루 보내', 'mp3/bye.mp3', None)
+                    motion.set_motion('hand3', 1)
+                    state = False
+                else:
+                    await talk('처음부터 시작해줘', 'mp3/restart.mp3', None)
+                    state = False
             motion.set_motion('stop')            
 
         await asyncio.sleep(0.5)
