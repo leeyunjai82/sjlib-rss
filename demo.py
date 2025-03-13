@@ -22,8 +22,9 @@ motion = Motion()
 device = Device()
 speech = Speech()
 
-VOLUME = 100
+VOLUME = 30
 TOPIC = '문헌정보실 테마도서'
+#TOPIC = '어린이실 테마도서'
 
 app = FastAPI()
 sio = SocketManager(app=app, cors_allowed_origins=[], mount_location="/ws/socket.io", socketio_path="")
@@ -68,7 +69,7 @@ def stt(filename="stream.wav", timeout=5, verbose=True):
     else:
         os.system(f'arecord -D dmic_sv -c2 -r 16000 -f S32_LE -d {timeout} -t wav -q stream.raw; sox stream.raw -q -c 1 -b 16 {filename}; rm stream.raw')
 
-    response = requests.post('https://s-vapi.circul.us/stt/stt', files={'uploadFile':open(filename, 'rb')})
+    response = requests.post('https://o-vapi.circul.us/stt/stt', files={'uploadFile':open(filename, 'rb')})
     if response.status_code != 200:
         raise Exception(f'response error: {response}')
 
@@ -91,12 +92,12 @@ async def talk(string, filepath, actions, key='msg1'):
     audio.play(filepath, VOLUME, background=False)
     device.eye_off()
     await asyncio.sleep(0.5)
-   
+
 # Listen function using asyncio to prevent blocking
 async def listen():
     device.eye_on(0, 255, 255)
     loop = asyncio.get_event_loop()
-    ans = await loop.run_in_executor(None, stt, 'record.wav', 5, False)
+    ans = await loop.run_in_executor(None, stt, 'record.wav', 7, False)
     device.eye_off()
     return ans
 
@@ -117,7 +118,8 @@ async def touch_sensor_monitor():
         if state == True:
             await talk('테마 별 도서를 소개해줄 수 있어', 'mp3/introduce_theme.mp3', None)
             for idx, item in enumerate(db['data']):
-                await talk(f"{idx + 1}. {item['title']}", f'mp3/voice.mp3', ["speak_r1", "speak_l1"], 'msg2')
+                if idx < 5:
+                    await talk(f"{idx + 1}. {item['title']}", f'mp3/voice.mp3', ["speak_r1", "speak_l1"], 'msg2')
 
             motion.set_motion('stop')
             await talk('어떤 테마 번호의 도서 추천을 원해?', 'mp3/select_theme.mp3', None)
@@ -158,7 +160,7 @@ async def touch_sensor_monitor():
                 state = True
             elif '안녕' in ans_text:
                 await talk('안녕, 좋은 하루 보내', 'mp3/bye.mp3', None)
-                motion.set_motion('hand3', 2)
+                motion.set_motion('hand3', 1)
                 state = False
             else:
                 await talk('잘못 선택했어, 다시 선택해줘', 'mp3/error.mp3', None)
